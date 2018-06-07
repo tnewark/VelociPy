@@ -1,6 +1,7 @@
 import requests
 import xmltodict
 import json
+import pprint
 
 # api documentation http://service.velocify.com/ClientService.asmx
 
@@ -18,7 +19,6 @@ class Api():
     @staticmethod
     def get_from_init(initfile='credentials.json'):
         cfg = Api.get_config(initfile)
-        print(cfg)
         return Api(
             cfg['username'],
             cfg['password']
@@ -40,7 +40,8 @@ class Api():
             self._build_url(command),
             self._build_params(**kwargs)
         )
-        return xmltodict.parse(result.content)
+        return xmltodict.parse(result.content,dict_constructor=dict)
+
 
     def get_fields(self):
         return self._raw_get('ClientService.asmx/GetFields')
@@ -57,13 +58,17 @@ class Api():
             leadId=lead_id
         )
 
+    def get_reports(self):
+        return self._raw_get(
+            'ClientService.asmx/GetReports'
+        )
+
 
 def main():
     api = Api.get_from_init()
-    #r = api.get_fields()
-    #r = api.get_report_results('67')
-    r = api.get_lead('14019')
-    print(json.dumps(r))
+    r = api.get_reports()    
+    reportInfo = [(k['@ReportTitle'], k['@ReportId']) for k in r['Reports']['Report']]
+    print(reportInfo)
 
 
 if __name__ == '__main__':
