@@ -1,13 +1,15 @@
 import requests
 import xmltodict
 import json
-import pprint
+from zeep import Client
+from lxml import etree
 
 # api documentation http://service.velocify.com/ClientService.asmx
 
 class Api():
 
     host = 'http://service.leads360.com'
+    velocify_wsdl = 'https://service.leads360.com/ClientService.asmx?WSDL'
 
     @staticmethod
     def get_config(filename):
@@ -62,6 +64,27 @@ class Api():
         return self._raw_get(
             'ClientService.asmx/GetReports'
         )
+
+    def modify_lead_campaign(self, lead_id, campaign_id):
+        return self._raw_get(
+            'ClientService.asmx/ModifyLeadCampaign',
+            leadId = lead_id,
+            campaignId = campaign_id
+        )
+
+    def get_campaigns(self):
+        return self._raw_get(
+            'ClientService.asmx/GetCampaigns'
+        )
+
+    # these are zeep based methods... necessary for now
+    def get_lead_xml(self, lead_id):
+        client = Client(Api.velocify_wsdl)
+        return client.service.GetLead(username=self.username, password=self.password, leadId=lead_id)
+
+    def modify_leads_xml(self, modified_leads):
+        client = Client(Api.velocify_wsdl)
+        client.service.ModifyLeads(username=self.username, password=self.password, leads=modified_leads)
 
 
 def main():
