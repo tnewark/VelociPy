@@ -3,6 +3,7 @@ import xmltodict
 import json
 from zeep import Client
 from lxml import etree
+import pprint
 
 # api documentation http://service.velocify.com/ClientService.asmx
 
@@ -48,6 +49,9 @@ class Api():
     def get_fields(self):
         return self._raw_get('ClientService.asmx/GetFields')
 
+    def get_field_mapping(self):
+        return {f['@FieldTitle']: f['@FieldId'] for f in self.get_fields()['Fields']['Field']}
+
     def get_report_results(self, report_id):
         return self._raw_get(
             'ClientService.asmx/GetReportResultsWithoutFilters',
@@ -77,6 +81,29 @@ class Api():
             'ClientService.asmx/GetCampaigns'
         )
 
+    def get_field_types(self):
+        return self._raw_get(
+            'ClientService.asmx/GetFieldTypes'
+        )
+
+    def get_field_groups(self):
+        return self._raw_get(
+            'ClientService.asmx/GetFieldGroups'
+        )
+    
+    def get_lead_form_types(self):
+        return self._raw_get(
+            'ClientService.asmx/GetLeadFormTypes'
+        )
+
+    def modify_lead_field(self,lead_id, field_id, new_value):
+        return self._raw_get(
+            'ClientService.asmx/ModifyLeadField',
+            leadId = lead_id,
+            fieldId = field_id,
+            value = new_value
+        )
+
     # these are zeep based methods... necessary for now
     def get_lead_xml(self, lead_id):
         client = Client(Api.velocify_wsdl)
@@ -89,10 +116,18 @@ class Api():
 
 def main():
     api = Api.get_from_init()
-    r = api.get_reports()    
-    reportInfo = [(k['@ReportTitle'], k['@ReportId']) for k in r['Reports']['Report']]
-    print(reportInfo)
-
+    # r = api.get_reports()    
+    # reportInfo = [(k['@ReportTitle'], k['@ReportId']) for k in r['Reports']['Report']]
+    # print(reportInfo)
+    field_groups = api.get_field_groups()
+    field_types = api.get_field_types()
+    fields = api.get_fields()
+    print('** fields **')
+    pprint.pprint(fields)
+    print('** field types **')
+    pprint.pprint(field_types)
+    print('** field groups **')
+    pprint.pprint(field_groups)
 
 if __name__ == '__main__':
     main()
