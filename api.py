@@ -45,6 +45,12 @@ class Api():
         )
         return xmltodict.parse(result.content,dict_constructor=dict)
 
+    def _raw_post(self, command, **kwargs):
+        result = requests.post(
+            self._build_url(command),
+            self._build_params(**kwargs)
+        )
+        return result
 
     def get_fields(self):
         return self._raw_get('ClientService.asmx/GetFields')
@@ -70,7 +76,7 @@ class Api():
         )
 
     def modify_lead_campaign(self, lead_id, campaign_id):
-        return self._raw_get(
+        return self._raw_post(
             'ClientService.asmx/ModifyLeadCampaign',
             leadId = lead_id,
             campaignId = campaign_id
@@ -97,11 +103,11 @@ class Api():
         )
 
     def modify_lead_field(self,lead_id, field_id, new_value):
-        return self._raw_get(
+        return self._raw_post(
             'ClientService.asmx/ModifyLeadField',
             leadId = lead_id,
             fieldId = field_id,
-            value = new_value
+            newValue = new_value
         )
 
     # these are zeep based methods... necessary for now
